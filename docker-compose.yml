@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: fleet-reserve-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fleet
+      POSTGRES_PASSWORD: fleet
+      POSTGRES_DB: fleet_reserve
+    ports:
+      # 55432 on the host: 5432 and 5433 are commonly taken by locally
+      # installed Postgres instances.
+      - "55432:5432"
+    volumes:
+      - fleet-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fleet -d fleet_reserve"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  fleet-db:

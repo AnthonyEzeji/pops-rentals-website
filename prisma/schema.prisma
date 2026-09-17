@@ -1,0 +1,292 @@
+// Fleet Reserve — data model (see docs/PRD.md §5)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Pooled connection (Supabase transaction mode, port 6543) — used at runtime.
+  url      = env("DATABASE_URL")
+  // Direct connection (Supabase session mode, port 5432) — migrations cannot
+  // run through a transaction pooler. Locally both point at the same database.
+  directUrl = env("DIRECT_URL")
+}
+
+enum VehicleStatus {
+  available
+  reserved
+  maintenance
+  out_of_service
+}
+
+enum VehicleCategory {
+  sedan
+  suv
+  van
+  luxury
+  pickup
+  bus
+}
+
+enum Transmission {
+  automatic
+  manual
+}
+
+enum FuelType {
+  petrol
+  diesel
+  hybrid
+  electric
+}
+
+enum ReservationType {
+  self_drive
+  chauffeur
+}
+
+enum ReservationStatus {
+  pending
+  confirmed
+  in_progress
+  completed
+  cancelled
+}
+
+enum PaymentStatus {
+  unpaid
+  deposit_paid
+  paid_in_full
+  refunded
+}
+
+enum BlockReason {
+  maintenance
+  out_of_service
+  other
+}
+
+enum ExpenseCategory {
+  fuel
+  repair
+  insurance
+  registration
+  cleaning
+  other
+}
+
+enum AdminRole {
+  owner
+  staff
+}
+
+model Vehicle {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  make        String
+  model       String
+  year        Int
+  plate       String          @unique
+  vin         String?
+  category    VehicleCategory
+  seats       Int
+  transmission Transmission
+  fuelType    FuelType
+  features    String[]        @default([])
+  odometer    Int? // km at last update
+
+  // Headline specs shown on the listing cards.
+  engine      String? // e.g. "4.0L twin-turbo V8"
+  horsepower  Int?
+  msrp        Int? // sticker price in minor units, for context on rates
+  topSpeed    Int? // mph
+  zeroToSixty Float? // seconds
+
+  // Money is stored in minor units (e.g. cents) to avoid float drift.
+  dailyRateSelfDrive   Int
+  chauffeurHourlyRate  Int?
+  chauffeurDayRate     Int?
+
+  status      VehicleStatus @default(available)
+  photos      String[]      @default([])
+  description String        @default("")
+
+  reservations  Reservation[]
+  blocks        VehicleBlock[]
+  maintenance   MaintenanceRecord[]
+  expenses      Expense[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([category])
+}
+
+model Customer {
+  id            String    @id @default(cuid())
+  name          String
+  email         String
+  phone         String
+  licenseNumber String?
+  licenseExpiry DateTime?
+  licenseCountry String?
+
+  reservations Reservation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Driver {
+  id            String  @id @default(cuid())
+  name          String
+  phone         String
+  email         String?
+  licenseNumber String
+  active        Boolean @default(true)
+  notes         String  @default("")
+
+  trips ChauffeurTrip[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Reservation {
+  id         String            @id @default(cuid())
+  reference  String            @unique // human-friendly, e.g. FR-8H3K2Q
+  type       ReservationType
+  status     ReservationStatus @default(pending)
+
+  vehicleId  String
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id])
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  startAt DateTime
+  endAt   DateTime
+
+  // Whether this reservation occupies the vehicle. Self-drive bookings hold
+  // immediately; chauffeur requests only once confirmed (PRD R5, configurable
+  // via CHAUFFEUR_HOLDS_ON_REQUEST). Enforced by a DB exclusion constraint —
+  // see the initial migration.
+  holdsAvailability Boolean @default(true)
+
+  priceTotal     Int
+  depositAmount  Int           @default(0)
+  amountPaid     Int           @default(0)
+  currency       String        @default("USD")
+  paymentStatus  PaymentStatus @default(unpaid)
+
+  stripeSessionId       String? @unique
+  stripePaymentIntentId String?
+
+  notes String @default("")
+
+  chauffeurTrip ChauffeurTrip?
+  statusEvents  ReservationEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vehicleId, startAt, endAt])
+  @@index([status])
+  @@index([startAt])
+}
+
+model ChauffeurTrip {
+  id            String @id @default(cuid())
+  reservationId String @unique
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  pickupAddress  String
+  dropoffAddress String
+  passengers     Int    @default(1)
+  luggageNotes   String @default("")
+  specialRequests String @default("")
+
+  driverId String?
+  driver   Driver? @relation(fields: [driverId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Audit trail for reservation status changes (PRD §7.2).
+model ReservationEvent {
+  id            String   @id @default(cuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  fromStatus    ReservationStatus?
+  toStatus      ReservationStatus
+  actor         String // admin email, or "system"
+  note          String   @default("")
+  createdAt     DateTime @default(now())
+
+  @@index([reservationId])
+}
+
+// Admin-created unavailability (maintenance, repairs, off-fleet). PRD A10/R2.
+model VehicleBlock {
+  id        String      @id @default(cuid())
+  vehicleId String
+  vehicle   Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  startAt   DateTime
+  endAt     DateTime
+  reason    BlockReason @default(maintenance)
+  note      String      @default("")
+
+  createdAt DateTime @default(now())
+
+  @@index([vehicleId, startAt, endAt])
+}
+
+model MaintenanceRecord {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  date        DateTime
+  type        String // service, tyres, brakes, inspection, ...
+  description String   @default("")
+  cost        Int      @default(0)
+  odometer    Int?
+  nextDueDate DateTime?
+  nextDueOdometer Int?
+
+  createdAt DateTime @default(now())
+
+  @@index([vehicleId, date])
+}
+
+model Expense {
+  id        String          @id @default(cuid())
+  vehicleId String? // null = general business expense
+  vehicle   Vehicle?        @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  date      DateTime
+  category  ExpenseCategory
+  amount    Int
+  vendor    String          @default("")
+  notes     String          @default("")
+  receiptUrl String?
+
+  createdAt DateTime @default(now())
+
+  @@index([vehicleId, date])
+  @@index([date])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         AdminRole @default(staff)
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
