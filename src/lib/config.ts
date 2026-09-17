@@ -11,11 +11,31 @@ function bool(value: string | undefined, fallback: boolean): boolean {
   return value === "true" || value === "1";
 }
 
+/**
+ * The site's public origin, used for Stripe redirects and links in email.
+ *
+ * `APP_URL` wins when set — that is what a custom domain looks like. Otherwise
+ * Vercel's own values are used, so the first deploy works before any domain
+ * exists: `VERCEL_PROJECT_PRODUCTION_URL` is the stable production domain and
+ * `VERCEL_URL` is the per-deployment one used on previews.
+ */
+function resolveAppUrl(): string {
+  if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, "");
+
+  const vercelDomain =
+    process.env.VERCEL_ENV === "production"
+      ? process.env.VERCEL_PROJECT_PRODUCTION_URL
+      : process.env.VERCEL_URL;
+  if (vercelDomain) return `https://${vercelDomain}`;
+
+  return "http://localhost:3000";
+}
+
 export const config = {
   businessName: process.env.NEXT_PUBLIC_BUSINESS_NAME || "Pops Rentals",
   currency: process.env.NEXT_PUBLIC_CURRENCY || "USD",
   timezone: process.env.BUSINESS_TIMEZONE || "UTC",
-  appUrl: process.env.APP_URL || "http://localhost:3000",
+  appUrl: resolveAppUrl(),
 
   // Contact details shown in the header, footer and confirmation emails.
   // Anything left blank is simply not rendered.
