@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { availableVehicleIds } from "@/lib/availability";
+import { parseBusinessDateTime } from "@/lib/dates";
 import { VehicleCard } from "@/components/vehicle-card";
 import { PageHeading } from "@/components/ui";
 import { SearchWidget } from "@/components/search-widget";
@@ -74,8 +75,8 @@ export default async function VehiclesPage({
   let availableIds: Set<string> | null = null;
   let rangeError: string | null = null;
   if (start && end) {
-    const startAt = new Date(`${start}T${String(startHour).padStart(2, "0")}:00`);
-    const endAt = new Date(`${end}T${String(endHour).padStart(2, "0")}:00`);
+    const startAt = parseBusinessDateTime(`${start}T${String(startHour).padStart(2, "0")}:00`);
+    const endAt = parseBusinessDateTime(`${end}T${String(endHour).padStart(2, "0")}:00`);
     if (
       Number.isNaN(startAt.getTime()) ||
       Number.isNaN(endAt.getTime()) ||

@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { config, stripeEnabled } from "@/lib/config";
 import { formatMoney } from "@/lib/money";
-import { formatDateTime } from "@/lib/dates";
+import { formatDateTime, parseBusinessDateTime } from "@/lib/dates";
 import { findConflict, quoteSelfDrive } from "@/lib/availability";
 import { Alert } from "@/components/ui";
 import { SelfDriveForm } from "./form";
@@ -41,8 +41,8 @@ export default async function SelfDriveBookingPage({
   const pad = (hour: string) => String(hour).padStart(2, "0");
   const startHour = one(query, "startHour") ?? "9";
   const endHour = one(query, "endHour") ?? "9";
-  const startAt = start ? new Date(`${start}T${pad(startHour)}:00`) : null;
-  const endAt = end ? new Date(`${end}T${pad(endHour)}:00`) : null;
+  const startAt = start ? parseBusinessDateTime(`${start}T${pad(startHour)}:00`) : null;
+  const endAt = end ? parseBusinessDateTime(`${end}T${pad(endHour)}:00`) : null;
   const hasRange =
     startAt && endAt && !Number.isNaN(startAt.getTime()) && !Number.isNaN(endAt.getTime()) && endAt > startAt;
 

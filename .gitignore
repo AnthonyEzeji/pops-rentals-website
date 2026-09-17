@@ -49,3 +49,5 @@ photo-originals/
 
 # Supabase CLI local state (project ref, cached versions)
 supabase/.temp/
+
+.vercel

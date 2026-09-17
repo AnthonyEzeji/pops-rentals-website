@@ -8,6 +8,7 @@ import { destroySession, requireAdmin, requireOwner } from "@/lib/auth";
 import { BookingError, findConflict, isOverlapViolation, quoteSelfDrive } from "@/lib/availability";
 import { changeStatus, rescheduleReservation } from "@/lib/booking";
 import { bookingReference, slugify } from "@/lib/reference";
+import { parseBusinessDateTime } from "@/lib/dates";
 import { toMinorUnits } from "@/lib/money";
 import {
   blockSchema,
@@ -140,8 +141,8 @@ export async function updateReservationPrice(
 export async function rescheduleAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireAdmin();
   const id = String(formData.get("id") ?? "");
-  const startAt = new Date(String(formData.get("startAt") ?? ""));
-  const endAt = new Date(String(formData.get("endAt") ?? ""));
+  const startAt = parseBusinessDateTime(String(formData.get("startAt") ?? ""));
+  const endAt = parseBusinessDateTime(String(formData.get("endAt") ?? ""));
 
   if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) {
     return { error: "Enter valid dates." };
@@ -164,8 +165,8 @@ export async function createReservationAction(
   const session = await requireAdmin();
 
   const vehicleId = String(formData.get("vehicleId") ?? "");
-  const startAt = new Date(String(formData.get("startAt") ?? ""));
-  const endAt = new Date(String(formData.get("endAt") ?? ""));
+  const startAt = parseBusinessDateTime(String(formData.get("startAt") ?? ""));
+  const endAt = parseBusinessDateTime(String(formData.get("endAt") ?? ""));
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const phone = String(formData.get("phone") ?? "").trim();

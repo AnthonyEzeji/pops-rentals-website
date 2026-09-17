@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { config } from "@/lib/config";
 import { formatMoney } from "@/lib/money";
-import { addDays, formatDate, toDateInputValue } from "@/lib/dates";
+import { addDays, formatDate, parseBusinessDateTime, toDateInputValue } from "@/lib/dates";
 import { findConflict, quoteSelfDrive, vehicleBusyWindows } from "@/lib/availability";
 import { humanize } from "@/components/ui";
 import { isRemoteImage } from "@/lib/images";
@@ -46,8 +46,8 @@ export default async function VehicleDetailPage({ params, searchParams }: Props)
   const startHour = one(query, "startHour") ?? "9";
   const endHour = one(query, "endHour") ?? "9";
   const pad = (hour: string) => String(hour).padStart(2, "0");
-  const startAt = start ? new Date(`${start}T${pad(startHour)}:00`) : null;
-  const endAt = end ? new Date(`${end}T${pad(endHour)}:00`) : null;
+  const startAt = start ? parseBusinessDateTime(`${start}T${pad(startHour)}:00`) : null;
+  const endAt = end ? parseBusinessDateTime(`${end}T${pad(endHour)}:00`) : null;
   const hasRange =
     startAt && endAt && !Number.isNaN(startAt.getTime()) && !Number.isNaN(endAt.getTime()) && endAt > startAt;
 

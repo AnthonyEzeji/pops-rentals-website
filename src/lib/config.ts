@@ -45,25 +45,11 @@ export const stripeEnabled = Boolean(process.env.STRIPE_SECRET_KEY);
 export const emailEnabled = Boolean(process.env.RESEND_API_KEY);
 
 /**
- * Booking times arrive as naive strings ("2026-09-20T09:00") from date and
- * datetime-local inputs, and `new Date()` resolves those against the *server's*
- * timezone. Locally that is your machine; on Vercel it is UTC unless TZ is set.
- * If they disagree, every booking silently shifts by the offset — a 9am pickup
- * becomes 4am. So the deployment must set TZ to the business timezone.
+ * The app does not depend on the server's timezone. Booking times arrive as
+ * naive wall-clock strings and are resolved against BUSINESS_TIMEZONE by
+ * `parseBusinessDateTime`, and every displayed time is formatted with an
+ * explicit `timeZone`. That matters because Vercel runs functions in UTC and
+ * treats TZ as a reserved variable, so it cannot be changed there.
+ *
+ * Set BUSINESS_TIMEZONE to where the business operates, e.g. America/New_York.
  */
-function assertTimezoneIsSane() {
-  const serverZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  if (serverZone === config.timezone) return;
-
-  const message =
-    `Timezone mismatch: server is "${serverZone}" but BUSINESS_TIMEZONE is ` +
-    `"${config.timezone}". Booking times will be off by the difference. ` +
-    `Set TZ="${config.timezone}" in the environment.`;
-
-  // Fail the deploy rather than take bookings at the wrong time. Locally this
-  // only warns, so a developer machine on a different zone is not blocked.
-  if (process.env.VERCEL || process.env.ENFORCE_TIMEZONE === "true") throw new Error(message);
-  console.warn(`[config] ${message}`);
-}
-
-assertTimezoneIsSane();

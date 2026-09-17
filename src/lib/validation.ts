@@ -1,8 +1,21 @@
 import { z } from "zod";
+import { parseBusinessDateTime } from "./dates";
 
 const trimmed = (max: number) => z.string().trim().max(max);
 const required = (label: string, max = 200) =>
   trimmed(max).min(1, `${label} is required.`);
+
+/**
+ * Date and datetime-local inputs post naive wall-clock strings with no zone.
+ * `z.coerce.date()` would resolve them against the server's clock — UTC on
+ * Vercel, where TZ is a reserved variable and cannot be changed — so a 9am
+ * pickup would be stored five hours early. Interpret them in the business
+ * timezone instead.
+ */
+const businessDate = z
+  .union([z.string(), z.date()])
+  .transform((value) => (value instanceof Date ? value : parseBusinessDateTime(value)))
+  .refine((date) => !Number.isNaN(date.getTime()), { message: "Enter a valid date." });
 
 export const customerSchema = z.object({
   name: required("Full name", 120),
@@ -12,10 +25,10 @@ export const customerSchema = z.object({
 
 export const selfDriveBookingSchema = customerSchema.extend({
   vehicleId: required("Vehicle"),
-  startAt: z.coerce.date(),
-  endAt: z.coerce.date(),
+  startAt: businessDate,
+  endAt: businessDate,
   licenseNumber: required("Licence number", 60),
-  licenseExpiry: z.coerce.date(),
+  licenseExpiry: businessDate,
   licenseCountry: required("Licence country", 60),
   notes: trimmed(1000).optional().default(""),
   acceptTerms: z.literal("on", { message: "Please accept the rental terms." }),
@@ -23,8 +36,8 @@ export const selfDriveBookingSchema = customerSchema.extend({
 
 export const chauffeurRequestSchema = customerSchema.extend({
   vehicleId: required("Vehicle"),
-  startAt: z.coerce.date(),
-  endAt: z.coerce.date(),
+  startAt: businessDate,
+  endAt: businessDate,
   pickupAddress: required("Pickup address", 300),
   dropoffAddress: required("Drop-off address", 300),
   passengers: z.coerce.number().int().min(1).max(60),
@@ -68,20 +81,20 @@ export const driverSchema = z.object({
 
 export const maintenanceSchema = z.object({
   vehicleId: required("Vehicle"),
-  date: z.coerce.date(),
+  date: businessDate,
   type: required("Type", 80),
   description: trimmed(1000).optional().default(""),
   cost: z.coerce.number().min(0).optional().default(0),
   odometer: z.coerce.number().int().min(0).optional(),
-  nextDueDate: z.union([z.coerce.date(), z.literal("")]).optional(),
+  nextDueDate: z.union([businessDate, z.literal("")]).optional(),
   nextDueOdometer: z.coerce.number().int().min(0).optional(),
-  blockStartAt: z.union([z.coerce.date(), z.literal("")]).optional(),
-  blockEndAt: z.union([z.coerce.date(), z.literal("")]).optional(),
+  blockStartAt: z.union([businessDate, z.literal("")]).optional(),
+  blockEndAt: z.union([businessDate, z.literal("")]).optional(),
 });
 
 export const expenseSchema = z.object({
   vehicleId: trimmed(40).optional().default(""),
-  date: z.coerce.date(),
+  date: businessDate,
   category: z.enum(["fuel", "repair", "insurance", "registration", "cleaning", "other"]),
   amount: z.coerce.number().min(0),
   vendor: trimmed(120).optional().default(""),
@@ -91,8 +104,8 @@ export const expenseSchema = z.object({
 
 export const blockSchema = z.object({
   vehicleId: required("Vehicle"),
-  startAt: z.coerce.date(),
-  endAt: z.coerce.date(),
+  startAt: businessDate,
+  endAt: businessDate,
   reason: z.enum(["maintenance", "out_of_service", "other"]),
   note: trimmed(500).optional().default(""),
 });
