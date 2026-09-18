@@ -202,7 +202,7 @@ function Detail({ label, children }: { label: string; children: React.ReactNode 
   return (
     <div>
       <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
-      <dd className="mt-0.5">{children}</dd>
+      <dd className="mt-0.5 wrap-break-word">{children}</dd>
     </div>
   );
 }

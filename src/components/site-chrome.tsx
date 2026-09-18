@@ -90,7 +90,7 @@ export async function SiteHeader() {
           <NavMenu label="Fleet" links={FLEET_LINKS} />
           <Link
             href="/book/chauffeur"
-            className="rounded-lg px-3 py-2 text-muted transition-colors hover:bg-canvas hover:text-ink"
+            className="hidden rounded-lg px-3 py-2 text-muted transition-colors hover:bg-canvas hover:text-ink sm:block"
           >
             Chauffeur
           </Link>
@@ -130,6 +130,45 @@ export async function SiteHeader() {
           <Link href="/vehicles" className="btn-primary btn-sm ml-1">
             Book now
           </Link>
+
+          {/* Below sm the links above are hidden, so everything lives here.
+              A <details> keeps it working without JavaScript. */}
+          <details className="group relative sm:hidden">
+            <summary
+              className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-lg text-muted transition-colors hover:bg-canvas hover:text-ink"
+              aria-label="Menu"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5" aria-hidden>
+                <path className="group-open:hidden" d="M3 5h14v1.6H3V5Zm0 4.2h14v1.6H3V9.2Zm0 4.2h14V15H3v-1.6Z" />
+                <path
+                  className="hidden group-open:block"
+                  d="M5.3 4.2 10 8.9l4.7-4.7 1.1 1.1L11.1 10l4.7 4.7-1.1 1.1L10 11.1l-4.7 4.7-1.1-1.1L8.9 10 4.2 5.3l1.1-1.1Z"
+                />
+              </svg>
+            </summary>
+
+            <div className="fixed inset-x-0 top-16 z-40 border-y border-line bg-surface p-4 shadow-(--shadow-lift)">
+              <ul className="space-y-1">
+                {[...FLEET_LINKS, ...COMPANY_LINKS].map((link) => (
+                  <li key={link.href + link.label}>
+                    <Link
+                      href={link.href}
+                      className="block rounded-lg px-3 py-3 text-base text-muted transition-colors hover:bg-brand-soft hover:text-ink"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              {telHref ? (
+                <a href={telHref} className="btn-secondary mt-3 w-full">
+                  Call {config.phone}
+                </a>
+              ) : null}
+              <p className="hint mt-3 text-center">{config.openingHours}</p>
+            </div>
+          </details>
         </nav>
       </div>
     </header>
@@ -173,7 +212,9 @@ export async function SiteFooter() {
 
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink">Contact</h2>
-          <ul className="mt-4 space-y-2.5 text-sm">
+          {/* Email addresses are single unbreakable tokens — without this they
+              push the footer wider than a 320px screen. */}
+          <ul className="mt-4 space-y-2.5 wrap-break-word text-sm">
             {telHref ? (
               <li>
                 <a href={telHref} className="hover:text-brand">

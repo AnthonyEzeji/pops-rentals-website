@@ -60,15 +60,17 @@ export async function HomeContent() {
               unoptimized={isRemoteImage(heroImage)}
               className="-z-10 object-cover object-center"
             />
-            {/* Two passes: a vertical wash so the headline has a dark bed, and a
-                left-weighted one so the copy column stays legible on wide screens. */}
+            {/* Scrim. On phones the copy spans the full width, so it needs a
+                heavy vertical wash; on wide screens the copy sits left, so the
+                horizontal pass carries it and the car stays visible on the right. */}
             <div
               aria-hidden
-              className="absolute inset-0 -z-10 bg-linear-to-b from-canvas/80 via-canvas/55 to-canvas"
+              className="absolute inset-0 -z-10 bg-linear-to-b from-canvas/90 via-canvas/75 to-canvas
+                         lg:from-canvas/80 lg:via-canvas/55"
             />
             <div
               aria-hidden
-              className="absolute inset-0 -z-10 bg-linear-to-r from-canvas via-canvas/70 to-transparent"
+              className="absolute inset-0 -z-10 hidden bg-linear-to-r from-canvas via-canvas/70 to-transparent lg:block"
             />
             {heroVehicle ? (
               <Link

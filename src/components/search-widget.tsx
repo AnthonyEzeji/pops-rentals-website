@@ -28,9 +28,11 @@ export function SearchWidget({
     <form
       method="get"
       action="/vehicles"
-      className={`grid gap-3 ${compact ? "sm:grid-cols-5" : "sm:grid-cols-2 lg:grid-cols-5"}`}
+      // Two columns on a phone keeps each date next to its time, so the form is
+      // three short rows rather than five full-width ones.
+      className={`grid grid-cols-2 gap-3 ${compact ? "sm:grid-cols-5" : "sm:grid-cols-2 lg:grid-cols-5"}`}
     >
-      <div className={compact ? "" : "sm:col-span-1"}>
+      <div>
         <label className="label" htmlFor="start">
           Pickup
         </label>
@@ -85,7 +87,7 @@ export function SearchWidget({
           ))}
         </select>
       </div>
-      <div className="flex items-end">
+      <div className="col-span-2 flex items-end sm:col-span-1">
         <button type="submit" className="btn-primary w-full">
           Check availability
         </button>

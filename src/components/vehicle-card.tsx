@@ -96,7 +96,7 @@ export function VehicleCard({
           ))}
         </ul>
 
-        <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-4">
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-line pt-4">
           <p className="text-sm">
             <span className="block text-xs text-muted">Starting at</span>
             <span className="text-lg font-semibold tabular-nums">

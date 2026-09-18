@@ -73,13 +73,15 @@ body {
 
   /* Tailwind v4 cannot @apply another custom class, so each variant repeats the
      base utilities rather than extending `.btn`. */
+  /* min-h-11 (44px) is the smallest comfortable touch target on a phone. */
   .btn,
   .btn-primary,
   .btn-secondary,
   .btn-ghost,
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
-           tracking-tight transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm
+           font-semibold tracking-tight transition-all duration-150
+           disabled:cursor-not-allowed disabled:opacity-60
            focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand;
   }
   .btn-primary {
@@ -96,17 +98,22 @@ body {
   .btn-danger {
     @apply border border-danger/40 bg-danger-soft text-danger hover:border-danger/70;
   }
+  /* Compact only where a pointer is likely; still 36px tall on touch. */
   .btn-sm {
-    @apply rounded-lg px-3 py-1.5 text-xs;
+    @apply min-h-9 rounded-lg px-3 py-1.5 text-xs;
   }
+
 
   .label {
     @apply mb-1.5 block text-sm font-medium text-ink;
   }
+  /* text-base below sm: iOS zooms the whole page when a focused field is under
+     16px, which leaves the user scrolled sideways mid-form. */
   .input {
-    @apply block w-full rounded-xl border border-line-strong bg-canvas px-3.5 py-2.5 text-sm text-ink
-           transition-colors placeholder:text-muted
-           focus:border-brand focus:outline-2 focus:outline-offset-0 focus:outline-brand;
+    @apply block min-h-11 w-full rounded-xl border border-line-strong bg-canvas px-3.5 py-2.5
+           text-base text-ink transition-colors placeholder:text-muted
+           focus:border-brand focus:outline-2 focus:outline-offset-0 focus:outline-brand
+           sm:min-h-0 sm:text-sm;
   }
   .hint {
     @apply mt-1 text-xs text-muted;
