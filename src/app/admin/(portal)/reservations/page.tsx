@@ -80,36 +80,53 @@ export default async function ReservationsPage({
           action={<ViewSwitch view={view} />}
         />
 
-        <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
-          <input type="hidden" name="view" value="calendar" />
-          <div>
-            <label className="label" htmlFor="from">
-              Starting
-            </label>
-            <input
-              id="from"
-              name="from"
-              type="date"
-              className="input"
-              defaultValue={toDateInputValue(anchor)}
-            />
+        <div className="mb-4 flex flex-wrap items-end gap-3">
+          {/* Paging first, so the arrows never get squeezed against the picker. */}
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/admin/reservations?view=calendar&from=${toDateInputValue(addDays(anchor, -14))}`}
+              className="btn-secondary w-11 px-0"
+              aria-label="Previous two weeks"
+              title="Previous two weeks"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden>
+                <path d="M12.5 3.8 6.3 10l6.2 6.2 1.2-1.2L8.7 10l5-5-1.2-1.2Z" />
+              </svg>
+            </Link>
+            <Link
+              href={`/admin/reservations?view=calendar&from=${toDateInputValue(addDays(anchor, 14))}`}
+              className="btn-secondary w-11 px-0"
+              aria-label="Next two weeks"
+              title="Next two weeks"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden>
+                <path d="M7.5 3.8 6.3 5l5 5-5 5 1.2 1.2L13.7 10 7.5 3.8Z" />
+              </svg>
+            </Link>
+            <Link href="/admin/reservations?view=calendar" className="btn-secondary">
+              Today
+            </Link>
           </div>
-          <button type="submit" className="btn-secondary">
-            Go
-          </button>
-          <Link
-            href={`/admin/reservations?view=calendar&from=${toDateInputValue(addDays(anchor, -14))}`}
-            className="btn-secondary"
-          >
-            ← Previous
-          </Link>
-          <Link
-            href={`/admin/reservations?view=calendar&from=${toDateInputValue(addDays(anchor, 14))}`}
-            className="btn-secondary"
-          >
-            Next →
-          </Link>
-        </form>
+
+          <form method="get" className="flex flex-1 items-end gap-2 sm:flex-none">
+            <input type="hidden" name="view" value="calendar" />
+            <div className="min-w-0 flex-1 sm:w-44 sm:flex-none">
+              <label className="label" htmlFor="from">
+                Jump to
+              </label>
+              <input
+                id="from"
+                name="from"
+                type="date"
+                className="input"
+                defaultValue={toDateInputValue(anchor)}
+              />
+            </div>
+            <button type="submit" className="btn-secondary shrink-0">
+              Go
+            </button>
+          </form>
+        </div>
 
         <FleetCalendar rows={rows} from={anchor} />
       </>

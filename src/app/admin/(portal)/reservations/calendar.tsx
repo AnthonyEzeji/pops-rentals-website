@@ -28,20 +28,54 @@ export function FleetCalendar({ rows, days = 14, from }: { rows: Row[]; days?: n
   const columns = Array.from({ length: days }, (_, index) => addDays(start, index));
   const dayMs = 86_400_000;
 
+  const last = columns[columns.length - 1];
+  const today = startOfDay(new Date()).getTime();
+
+  // "September 2026" or "Sep – Oct 2026" when the window straddles a month.
+  const monthLabel =
+    start.getMonth() === last.getMonth() && start.getFullYear() === last.getFullYear()
+      ? start.toLocaleDateString("en-GB", { month: "long", year: "numeric" })
+      : `${start.toLocaleDateString("en-GB", { month: "short" })} – ` +
+        `${last.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}`;
+
   return (
     <div className="card overflow-x-auto">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-3 py-2.5">
+        <h2 className="font-semibold tracking-tight">{monthLabel}</h2>
+        <p className="text-xs text-muted">
+          {formatDate(start)} – {formatDate(last)}
+        </p>
+      </div>
+
       <div className="min-w-225">
         <div
           className="grid border-b border-line bg-canvas text-xs font-medium text-muted"
           style={{ gridTemplateColumns: `180px repeat(${days}, minmax(0, 1fr))` }}
         >
           <div className="px-3 py-2">Vehicle</div>
-          {columns.map((day) => (
-            <div key={day.toISOString()} className="border-l border-line px-1 py-2 text-center">
-              <div>{day.toLocaleDateString("en-GB", { weekday: "narrow" })}</div>
-              <div className="text-ink">{day.getDate()}</div>
-            </div>
-          ))}
+          {columns.map((day, index) => {
+            const isToday = day.getTime() === today;
+            // Mark where a new month begins, so a window spanning two months
+            // is readable without counting days.
+            const startsMonth = index === 0 || day.getDate() === 1;
+            return (
+              <div
+                key={day.toISOString()}
+                className={`border-l px-1 py-2 text-center ${
+                  isToday ? "border-brand/40 bg-brand-soft" : "border-line"
+                }`}
+              >
+                <div className={isToday ? "text-accent" : ""}>
+                  {startsMonth
+                    ? day.toLocaleDateString("en-GB", { month: "short" })
+                    : day.toLocaleDateString("en-GB", { weekday: "narrow" })}
+                </div>
+                <div className={isToday ? "font-semibold text-accent" : "text-ink"}>
+                  {day.getDate()}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {rows.map((row) => (

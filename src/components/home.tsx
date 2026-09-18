@@ -6,6 +6,17 @@ import { formatMoney } from "@/lib/money";
 import { VehicleCard } from "@/components/vehicle-card";
 import { SearchWidget } from "@/components/search-widget";
 import { isRemoteImage } from "@/lib/images";
+import {
+  CalendarCheckIcon,
+  CardIcon,
+  ChatIcon,
+  KeyIcon,
+  LicenceIcon,
+  PlaneIcon,
+  ShieldUserIcon,
+  TagIcon,
+  WrenchIcon,
+} from "@/components/icons";
 
 /**
  * Home page body, without the site header and footer, so it can be rendered
@@ -89,12 +100,12 @@ export async function HomeContent() {
               <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
               {config.businessName}
             </p>
-            <h1 className="mt-4 text-4xl font-semibold tracking-tighter text-balance sm:text-6xl">
+            <h1 className="display mt-5">
               Drive it yourself,
               <br />
               <span className="text-muted">or let us drive.</span>
             </h1>
-            <p className="mt-5 max-w-prose text-lg text-muted">
+            <p className="lede mt-5">
               Book a self-drive rental online in a couple of minutes, or send us the details of your
               trip and we&apos;ll put a vetted chauffeur behind the wheel.
             </p>
@@ -174,9 +185,9 @@ export async function HomeContent() {
         </div>
       </section>
 
-      <section className="container-page py-14">
+      <section className="container-page section">
         <div className="mb-6 flex items-end justify-between gap-4">
-          <h2 className="text-2xl font-semibold tracking-tight">From the fleet</h2>
+          <h2 className="h-section">From the fleet</h2>
           <Link href="/vehicles" className="text-sm font-semibold text-accent">
             See all →
           </Link>
@@ -195,11 +206,11 @@ export async function HomeContent() {
 
       {/* Browse by make — the fleet's own manufacturers, not a fixed list. */}
       {makes.length > 1 ? (
-        <section className="container-page py-14">
+        <section className="container-page section">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow">Browse by make</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight">Know what you want?</h2>
+              <h2 className="h-section mt-2">Know what you want?</h2>
             </div>
             <Link href="/vehicles" className="text-sm font-semibold text-accent">
               See the whole fleet →
@@ -226,10 +237,10 @@ export async function HomeContent() {
       ) : null}
 
       {/* Why book with us */}
-      <section className="border-y border-line bg-surface py-16">
+      <section className="border-y border-line bg-surface section">
         <div className="container-page">
           <p className="eyebrow">Why book with us</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h2 className="h-section mt-2">
             Booked online, confirmed properly.
           </h2>
           <p className="mt-2 max-w-prose text-muted">
@@ -237,16 +248,13 @@ export async function HomeContent() {
           </p>
 
           <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {REASONS.map((reason) => (
-              <li key={reason.title}>
-                <span
-                  aria-hidden
-                  className="grid h-10 w-10 place-items-center rounded-xl bg-brand-soft text-lg text-accent ring-1 ring-brand/30 ring-inset"
-                >
-                  {reason.mark}
+            {REASONS.map(({ Icon, title, body }) => (
+              <li key={title}>
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-accent ring-1 ring-brand/25 ring-inset">
+                  <Icon className="h-5 w-5" />
                 </span>
-                <h3 className="mt-4 font-semibold tracking-tight">{reason.title}</h3>
-                <p className="mt-1.5 text-sm text-muted">{reason.body}</p>
+                <h3 className="mt-4 font-semibold tracking-tight">{title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">{body}</p>
               </li>
             ))}
           </ul>
@@ -254,24 +262,23 @@ export async function HomeContent() {
       </section>
 
       {/* How it works + what you'll need */}
-      <section className="container-page py-16">
+      <section className="container-page section">
         <p className="eyebrow">How it works</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+        <h2 className="h-section mt-2">
           Four steps from here to the keys.
         </h2>
 
         <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step, index) => (
-            <li key={step.title} className="card relative overflow-hidden p-5">
-              <span
-                aria-hidden
-                className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-brand via-brand/30 to-transparent"
-              />
-              <span className="text-3xl font-semibold tabular-nums text-brand-dark">
+            <li key={step.title} className="relative border-t border-line pt-5">
+              {/* A short accent tick above each step reads as a numbered
+                  sequence without shouting a giant numeral. */}
+              <span aria-hidden className="absolute -top-px left-0 h-px w-10 bg-brand" />
+              <span className="text-xs font-semibold tabular-nums tracking-[0.12em] text-accent">
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <h3 className="mt-3 font-semibold tracking-tight">{step.title}</h3>
-              <p className="mt-1.5 text-sm text-muted">{step.body}</p>
+              <h3 className="mt-2 font-semibold tracking-tight">{step.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">{step.body}</p>
             </li>
           ))}
         </ol>
@@ -279,7 +286,7 @@ export async function HomeContent() {
         <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1.2fr] lg:items-start">
           <div>
             <p className="eyebrow">Before you book</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">What you&apos;ll need</h2>
+            <h2 className="h-section mt-2">What you&apos;ll need</h2>
             <p className="mt-2 text-muted">
               Self-drive hires are checked at collection. Having these ready keeps the handover to a
               few minutes.
@@ -290,10 +297,13 @@ export async function HomeContent() {
           </div>
 
           <ul className="grid gap-3 sm:grid-cols-2">
-            {REQUIREMENTS.map((requirement) => (
-              <li key={requirement.title} className="card p-4">
-                <p className="font-semibold tracking-tight">{requirement.title}</p>
-                <p className="mt-1 text-sm text-muted">{requirement.body}</p>
+            {REQUIREMENTS.map(({ Icon, title, body }) => (
+              <li key={title} className="card flex gap-3 p-4">
+                <Icon className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+                <div>
+                  <p className="font-semibold tracking-tight">{title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{body}</p>
+                </div>
               </li>
             ))}
           </ul>
@@ -362,32 +372,32 @@ export async function HomeContent() {
 
 const REASONS = [
   {
-    mark: "◉",
+    Icon: CalendarCheckIcon,
     title: "Live availability",
     body: "The dates you see are the dates you can have. Every booking is checked against the fleet calendar as you make it.",
   },
   {
-    mark: "◆",
+    Icon: TagIcon,
     title: "Clear pricing",
     body: "Daily rate, deposit and balance shown before you pay. Longer hires get the weekly and monthly rate automatically.",
   },
   {
-    mark: "★",
+    Icon: ShieldUserIcon,
     title: "Vetted drivers",
     body: "Chauffeur trips go out with a named, licensed driver — you get their details with your confirmation.",
   },
   {
-    mark: "▣",
+    Icon: WrenchIcon,
     title: "Maintained between hires",
     body: "Every car is serviced and inspected on a schedule, and pulled from booking while it's in the shop.",
   },
   {
-    mark: "✈",
+    Icon: PlaneIcon,
     title: "Airport and event ready",
     body: "Early starts, late finishes and waiting time handled — tell us the flight and we'll plan around it.",
   },
   {
-    mark: "◈",
+    Icon: ChatIcon,
     title: "Real people on the other end",
     body: "Requests are confirmed by a person, usually within the hour during business hours.",
   },
@@ -402,18 +412,22 @@ const STEPS = [
 
 const REQUIREMENTS = [
   {
+    Icon: LicenceIcon,
     title: "A valid driver's licence",
     body: "Held in the main driver's name and valid for the whole rental period.",
   },
   {
+    Icon: CardIcon,
     title: "Photo ID and a payment card",
     body: "The card must be in the same name as the licence for the security hold.",
   },
   {
+    Icon: ShieldUserIcon,
     title: "Insurance that covers you",
     body: "Standard cover is included; check the terms for the excess that applies.",
   },
   {
+    Icon: KeyIcon,
     title: "Anyone else who'll drive",
     body: "Additional drivers must be named on the agreement before collection.",
   },

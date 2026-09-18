@@ -32,10 +32,12 @@
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  /* Depth on dark comes from borders and glow, not drop shadows. */
+  /* Depth on dark comes from borders and a little elevation, not glow. The
+     accent shadow is deliberately restrained — a hint of light under a raised
+     element, not a neon halo. */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5);
   --shadow-lift: 0 16px 40px -16px rgb(0 0 0 / 0.75);
-  --shadow-glow: 0 0 0 1px rgb(44 230 94 / 0.4), 0 10px 30px -10px rgb(44 230 94 / 0.35);
+  --shadow-glow: 0 6px 20px -8px rgb(44 230 94 / 0.35);
 }
 
 /* Tell the browser to render form controls, scrollbars and date pickers dark. */
@@ -60,14 +62,33 @@ body {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
   }
 
+  /* One vertical rhythm for every major band, so sections stop drifting
+     between py-14 and py-16. */
+  .section {
+    @apply py-16 sm:py-20;
+  }
+
+  /* Type scale. Headings share the same tightening so they read as one family
+     rather than each page inventing its own. */
+  .display {
+    @apply text-4xl font-semibold tracking-[-0.03em] text-balance sm:text-5xl lg:text-6xl;
+  }
+  .h-section {
+    @apply text-2xl font-semibold tracking-[-0.02em] sm:text-3xl;
+  }
+  .lede {
+    @apply max-w-prose text-base leading-relaxed text-muted sm:text-lg;
+  }
+
   .card {
     @apply rounded-2xl border border-line bg-surface shadow-(--shadow-card);
   }
 
-  /* Lift on hover — for cards that are themselves links. */
+  /* Lift on hover — for cards that are themselves links. Restrained: a 2px
+     rise and a border that warms toward the brand, not a jump. */
   .card-interactive {
     @apply rounded-2xl border border-line bg-surface shadow-(--shadow-card)
-           transition-all duration-200 hover:-translate-y-0.5 hover:border-line-strong
+           transition-all duration-200 hover:-translate-y-px hover:border-brand/35
            hover:shadow-(--shadow-lift);
   }
 
