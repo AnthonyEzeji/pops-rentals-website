@@ -1,0 +1,13 @@
+# Full-size photo backups — the web-sized copies in public/vehicles are what
+# the site serves. Keeps ~57MB out of every deployment.
+photo-originals/
+
+# Local tooling state
+supabase/.temp/
+.claude/
+docs/
+
+# Never upload local env files; Vercel supplies its own.
+.env
+.env.*
+!.env.example

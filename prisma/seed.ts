@@ -130,12 +130,20 @@ async function main() {
   // Presence is not enough: .env and .env.example both ship "ChangeMe123!", so
   // a hosted database would end up with an admin password anyone can read here.
   const PUBLISHED_PASSWORDS = ["ChangeMe123!", "StaffPass123!", "changeme", "password"];
-  if (deployed && (PUBLISHED_PASSWORDS.includes(password) || password.length < 12)) {
+  const reason = !process.env.SEED_ADMIN_PASSWORD
+    ? "SEED_ADMIN_PASSWORD is not set, so the seed fell back to the default in this repo"
+    : PUBLISHED_PASSWORDS.includes(password)
+      ? "that password is published in this repo"
+      : password.length < 12
+        ? `that password is ${password.length} characters; 12 or more is required`
+        : null;
+
+  if (deployed && reason) {
     throw new Error(
       `Refusing to seed ${target.replace(/:[^:@/]*@/, ":***@")}\n` +
-        "with a password that is published in this repo (or shorter than 12 characters).\n" +
-        "Run it again with a real one:\n" +
-        '  SEED_ADMIN_EMAIL="you@yourdomain.com" SEED_ADMIN_PASSWORD="…" npx prisma db seed',
+        `because ${reason}.\n` +
+        "This account is the admin login for the live site — give it a real password:\n" +
+        '  $env:SEED_ADMIN_PASSWORD = \'…\'   (PowerShell)  then  npx prisma db seed',
     );
   }
   const passwordHash = await bcrypt.hash(password, 12);
@@ -291,7 +299,12 @@ async function main() {
     });
   }
 
-  console.log(`Seeded ${VEHICLES.length} vehicles. Admin login: ${owner.email} / ${password}`);
+  // Never echo the password against a hosted database — terminal scrollback and
+  // CI logs are the wrong place for the live admin credential.
+  console.log(
+    `Seeded ${VEHICLES.length} vehicles. Admin login: ${owner.email} / ` +
+      (deployed ? "(the SEED_ADMIN_PASSWORD you supplied)" : password),
+  );
 }
 
 main()

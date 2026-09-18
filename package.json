@@ -15,6 +15,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "photos:sync": "tsx scripts/sync-photos.ts",
     "photos:optimize": "tsx scripts/optimize-photos.ts",
+    "brand:assets": "tsx scripts/make-brand-assets.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
