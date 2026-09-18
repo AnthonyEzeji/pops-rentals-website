@@ -57,6 +57,44 @@ body {
   color: var(--color-brand-ink);
 }
 
+/* Native date and time controls.
+   Safari sizes these from their own content and ignores width on the shadow
+   value, which is what makes them overflow their column and look unlike every
+   other field. These rules make them behave like normal inputs. */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  width: 100%;
+}
+
+/* iOS centres the value and collapses the line box; left-align it and hold the
+   height so the field does not change size once a value is chosen. */
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value,
+input[type="datetime-local"]::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 1.5em;
+}
+
+/* The picker button is a dark glyph by default; lift it on the dark ground. */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  opacity: 0.55;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.25rem;
+}
+
+input[type="date"]:hover::-webkit-calendar-picker-indicator,
+input[type="time"]:hover::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
 @layer components {
   .container-page {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
@@ -129,10 +167,13 @@ body {
     @apply mb-1.5 block text-sm font-medium text-ink;
   }
   /* text-base below sm: iOS zooms the whole page when a focused field is under
-     16px, which leaves the user scrolled sideways mid-form. */
+     16px, which leaves the user scrolled sideways mid-form.
+     min-w-0: grid and flex children default to min-width:auto, and date inputs
+     carry an intrinsic width — without this they push their column wider than
+     its track and the row jumps. */
   .input {
-    @apply block min-h-11 w-full rounded-xl border border-line-strong bg-canvas px-3.5 py-2.5
-           text-base text-ink transition-colors placeholder:text-muted
+    @apply block min-h-11 w-full min-w-0 rounded-xl border border-line-strong bg-canvas px-3.5
+           py-2.5 text-base text-ink transition-colors placeholder:text-muted
            focus:border-brand focus:outline-2 focus:outline-offset-0 focus:outline-brand
            sm:min-h-0 sm:text-sm;
   }

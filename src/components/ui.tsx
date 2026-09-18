@@ -117,7 +117,9 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <div>
+    // min-w-0 so a field inside a grid or flex row can shrink with its column
+    // instead of forcing the row wider than the screen.
+    <div className="min-w-0">
       <label className="label" htmlFor={name}>
         {label}
       </label>

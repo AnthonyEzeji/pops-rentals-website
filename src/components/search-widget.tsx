@@ -32,7 +32,7 @@ export function SearchWidget({
       // three short rows rather than five full-width ones.
       className={`grid grid-cols-2 gap-3 ${compact ? "sm:grid-cols-5" : "sm:grid-cols-2 lg:grid-cols-5"}`}
     >
-      <div>
+      <div className="min-w-0">
         <label className="label" htmlFor="start">
           Pickup
         </label>
@@ -45,7 +45,7 @@ export function SearchWidget({
           defaultValue={start}
         />
       </div>
-      <div>
+      <div className="min-w-0">
         <label className="label" htmlFor="startHour">
           Time
         </label>
@@ -62,7 +62,7 @@ export function SearchWidget({
           ))}
         </select>
       </div>
-      <div>
+      <div className="min-w-0">
         <label className="label" htmlFor="end">
           Return
         </label>
@@ -75,7 +75,7 @@ export function SearchWidget({
           defaultValue={end}
         />
       </div>
-      <div>
+      <div className="min-w-0">
         <label className="label" htmlFor="endHour">
           Time
         </label>
