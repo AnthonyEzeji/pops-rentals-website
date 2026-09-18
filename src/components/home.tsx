@@ -76,12 +76,12 @@ export async function HomeContent() {
                 horizontal pass carries it and the car stays visible on the right. */}
             <div
               aria-hidden
-              className="absolute inset-0 -z-10 bg-linear-to-b from-canvas/90 via-canvas/75 to-canvas
-                         lg:from-canvas/80 lg:via-canvas/55"
+              className="absolute inset-0 -z-10 bg-linear-to-b from-canvas/70 via-canvas/45 to-canvas
+                         lg:from-canvas/55 lg:via-canvas/25"
             />
             <div
               aria-hidden
-              className="absolute inset-0 -z-10 hidden bg-linear-to-r from-canvas via-canvas/70 to-transparent lg:block"
+              className="absolute inset-0 -z-10 hidden bg-linear-to-r from-canvas/90 via-canvas/45 to-transparent lg:block"
             />
             {heroVehicle ? (
               <Link
@@ -95,7 +95,9 @@ export async function HomeContent() {
         ) : null}
 
         <div className="container-page grid gap-10 py-20 lg:grid-cols-2 lg:items-center lg:py-28">
-          <div>
+          {/* A soft shadow carries legibility now that the scrim is lighter, so
+              the car stays visible instead of being dimmed to make room. */}
+          <div className={heroImage ? "[text-shadow:0_2px_18px_rgb(0_0_0/0.75)]" : ""}>
             <p className="badge-brand">
               <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
               {config.businessName}
