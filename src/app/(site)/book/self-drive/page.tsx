@@ -138,17 +138,30 @@ export default async function SelfDriveBookingPage({
             <dl className="mt-4 space-y-2 border-t border-line pt-4 text-sm">
               <div className="flex justify-between gap-4">
                 <dt className="font-medium">Due now</dt>
-                <dd className="text-lg font-semibold">
-                  {formatMoney(stripeEnabled ? quote.deposit : 0)}
-                </dd>
+                <dd className="text-lg font-semibold">{formatMoney(quote.deposit)}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-muted">Due at collection</dt>
-                <dd className="font-medium">
-                  {formatMoney(stripeEnabled ? quote.balanceDue : quote.total)}
-                </dd>
+                <dt className="text-muted">Rental balance</dt>
+                <dd className="font-medium">{formatMoney(quote.balanceDue)}</dd>
+              </div>
+              {quote.securityDeposit > 0 ? (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted">Refundable security deposit</dt>
+                  <dd className="font-medium">{formatMoney(quote.securityDeposit)}</dd>
+                </div>
+              ) : null}
+              <div className="flex justify-between gap-4 border-t border-line pt-2">
+                <dt className="font-medium">Due at collection</dt>
+                <dd className="text-lg font-semibold">{formatMoney(quote.dueAtCollection)}</dd>
               </div>
             </dl>
+
+            {quote.securityDeposit > 0 ? (
+              <p className="hint mt-3">
+                The security deposit is a refundable hold, returned after the car comes back
+                undamaged and with a full tank.
+              </p>
+            ) : null}
 
             <p className="hint mt-4">
               Free cancellation until {config.cancellationWindowHours} hours before collection. See

@@ -17,7 +17,7 @@ const VEHICLES = [
   {
     make: "Lamborghini", model: "Urus", year: 2021, plate: "FR-1001",
     category: "luxury" as const, seats: 5, transmission: "automatic" as const,
-    fuelType: "petrol" as const, dailyRateSelfDrive: 120_000,
+    fuelType: "petrol" as const, dailyRateSelfDrive: 135_000, securityDeposit: 100_000,
     chauffeurHourlyRate: 20_000, chauffeurDayRate: 180_000,
     engine: "4.0L twin-turbo V8", horsepower: 641, zeroToSixty: 3.5, topSpeed: 190,
     features: ["All-wheel drive", "Carbon interior", "Panoramic roof", "Sport exhaust"],
@@ -27,7 +27,7 @@ const VEHICLES = [
   {
     make: "Mercedes-Benz", model: "GLS 600 Maybach", year: 2023, plate: "FR-1002",
     category: "luxury" as const, seats: 4, transmission: "automatic" as const,
-    fuelType: "petrol" as const, dailyRateSelfDrive: 90_000,
+    fuelType: "petrol" as const, dailyRateSelfDrive: 90_000, securityDeposit: 100_000,
     chauffeurHourlyRate: 15_000, chauffeurDayRate: 135_000,
     engine: "4.0L twin-turbo V8 with EQ Boost", horsepower: 550, zeroToSixty: 4.8, topSpeed: 130,
     features: ["Executive rear seats", "Rear entertainment", "Burmester 3D audio", "Air suspension"],
@@ -37,7 +37,7 @@ const VEHICLES = [
   {
     make: "Mercedes-AMG", model: "C63 S E Performance", year: 2024, plate: "FR-1003",
     category: "sedan" as const, seats: 5, transmission: "automatic" as const,
-    fuelType: "hybrid" as const, dailyRateSelfDrive: 55_000,
+    fuelType: "hybrid" as const, dailyRateSelfDrive: 55_000, securityDeposit: 100_000,
     chauffeurHourlyRate: null, chauffeurDayRate: null,
     engine: "2.0L turbo hybrid", horsepower: 671, zeroToSixty: 3.3, topSpeed: 174,
     features: ["AMG performance exhaust", "Race mode", "Rear-axle steering", "Carbon trim"],
@@ -47,7 +47,7 @@ const VEHICLES = [
   {
     make: "Cadillac", model: "Escalade", year: 2022, plate: "FR-1004",
     category: "suv" as const, seats: 7, transmission: "automatic" as const,
-    fuelType: "petrol" as const, dailyRateSelfDrive: 50_000,
+    fuelType: "petrol" as const, dailyRateSelfDrive: 50_000, securityDeposit: 100_000,
     chauffeurHourlyRate: 9_000, chauffeurDayRate: 75_000,
     engine: "6.2L V8", horsepower: 420, zeroToSixty: 6.1, topSpeed: 112,
     features: ["7 seats", "38-inch curved OLED display", "AKG audio", "Power running boards"],
@@ -57,7 +57,7 @@ const VEHICLES = [
   {
     make: "BMW", model: "M5", year: 2019, plate: "FR-1005",
     category: "sedan" as const, seats: 5, transmission: "automatic" as const,
-    fuelType: "petrol" as const, dailyRateSelfDrive: 50_000,
+    fuelType: "petrol" as const, dailyRateSelfDrive: 50_000, securityDeposit: 100_000,
     chauffeurHourlyRate: null, chauffeurDayRate: null,
     engine: "4.4L twin-turbo V8", horsepower: 600, zeroToSixty: 3.2, topSpeed: 155,
     features: ["M xDrive all-wheel drive", "Merino leather", "M sport exhaust", "Head-up display"],
@@ -66,7 +66,7 @@ const VEHICLES = [
   {
     make: "BMW", model: "M550i", year: 2019, plate: "FR-1006",
     category: "sedan" as const, seats: 5, transmission: "automatic" as const,
-    fuelType: "petrol" as const, dailyRateSelfDrive: 35_000,
+    fuelType: "petrol" as const, dailyRateSelfDrive: 35_000, securityDeposit: 75_000,
     chauffeurHourlyRate: null, chauffeurDayRate: null,
     engine: "4.4L twin-turbo V8", horsepower: 523, zeroToSixty: 3.6, topSpeed: 155,
     features: ["xDrive all-wheel drive", "Harman Kardon audio", "Comfort seats", "Adaptive drive"],
@@ -75,7 +75,7 @@ const VEHICLES = [
   {
     make: "Dodge", model: "Charger Scat Pack", year: 2020, plate: "FR-1007",
     category: "sedan" as const, seats: 5, transmission: "automatic" as const,
-    fuelType: "petrol" as const, dailyRateSelfDrive: 35_000,
+    fuelType: "petrol" as const, dailyRateSelfDrive: 35_000, securityDeposit: 100_000,
     chauffeurHourlyRate: null, chauffeurDayRate: null,
     engine: "6.4L HEMI V8", horsepower: 485, zeroToSixty: 4.3, topSpeed: 175,
     features: ["Launch control", "Brembo brakes", "Sport exhaust", "Line lock"],
@@ -84,7 +84,7 @@ const VEHICLES = [
   {
     make: "BMW", model: "330i", year: 2023, plate: "FR-1008",
     category: "sedan" as const, seats: 5, transmission: "automatic" as const,
-    fuelType: "petrol" as const, dailyRateSelfDrive: 30_000,
+    fuelType: "petrol" as const, dailyRateSelfDrive: 30_000, securityDeposit: 50_000,
     chauffeurHourlyRate: 6_000, chauffeurDayRate: 45_000,
     engine: "2.0L turbo inline-4", horsepower: 255, zeroToSixty: 5.6, topSpeed: 155,
     features: ["Apple CarPlay", "Heated seats", "Live Cockpit Pro", "Parking assistant"],
@@ -93,7 +93,7 @@ const VEHICLES = [
   {
     make: "Honda", model: "Accord", year: 2017, plate: "FR-1009",
     category: "sedan" as const, seats: 5, transmission: "automatic" as const,
-    fuelType: "petrol" as const, dailyRateSelfDrive: 12_500,
+    fuelType: "petrol" as const, dailyRateSelfDrive: 12_500, securityDeposit: 25_000,
     chauffeurHourlyRate: null, chauffeurDayRate: null,
     engine: "2.4L inline-4", horsepower: 185, zeroToSixty: 7.6, topSpeed: 125,
     features: ["Bluetooth", "Reverse camera", "Cruise control", "Air conditioning"],
@@ -170,29 +170,20 @@ async function main() {
   }
 
   for (const v of VEHICLES) {
+    // Keyed on slug, not plate: the operator replaces placeholder plates with
+    // real registrations in the admin, and keying on plate would make this
+    // create a second copy of every car.
     const slug = slugify(`${v.year}-${v.make}-${v.model}`);
     await prisma.vehicle.upsert({
-      where: { plate: v.plate },
+      where: { slug },
+      // Specifications only. Rates, deposits, plates, status and photos are
+      // maintained in the admin once the site is live, so a reseed must not
+      // overwrite them.
       update: {
-        // Rates and copy are the source of truth here; status and photos are
-        // left alone so admin edits survive a reseed.
-        make: v.make,
-        model: v.model,
-        year: v.year,
-        category: v.category,
-        seats: v.seats,
-        transmission: v.transmission,
-        fuelType: v.fuelType,
-        dailyRateSelfDrive: v.dailyRateSelfDrive,
-        chauffeurHourlyRate: v.chauffeurHourlyRate,
-        chauffeurDayRate: v.chauffeurDayRate,
         engine: v.engine,
         horsepower: v.horsepower,
         zeroToSixty: v.zeroToSixty,
         topSpeed: v.topSpeed,
-        features: v.features,
-        description: v.description,
-        slug,
       },
       create: { ...v, slug, photos: [], odometer: 15_000 + Math.floor(Math.random() * 50_000) },
     });
@@ -299,11 +290,13 @@ async function main() {
     });
   }
 
-  // Never echo the password against a hosted database — terminal scrollback and
-  // CI logs are the wrong place for the live admin credential.
+  // Only ever echo the throwaway default. A password the operator supplied is
+  // a real credential — printing it puts it in terminal scrollback and CI logs
+  // regardless of which database it was applied to.
+  const isRepoDefault = !process.env.SEED_ADMIN_PASSWORD;
   console.log(
     `Seeded ${VEHICLES.length} vehicles. Admin login: ${owner.email} / ` +
-      (deployed ? "(the SEED_ADMIN_PASSWORD you supplied)" : password),
+      (isRepoDefault ? password : "(the SEED_ADMIN_PASSWORD you supplied)"),
   );
 }
 

@@ -1,6 +1,6 @@
 import type { Prisma, Vehicle } from "@prisma/client";
 import { prisma } from "./prisma";
-import { config } from "./config";
+import { config, stripeEnabled } from "./config";
 
 export class BookingError extends Error {
   code: string;
@@ -36,6 +36,10 @@ export type Quote = {
   total: number;
   deposit: number;
   balanceDue: number;
+  /** Refundable hold taken at collection, on top of the balance. */
+  securityDeposit: number;
+  /** What the customer actually hands over at collection. */
+  dueAtCollection: number;
   currency: string;
 };
 
@@ -51,7 +55,7 @@ export function discountFor(days: number): { percent: number; label: string | nu
 }
 
 export function quoteSelfDrive(
-  vehicle: Pick<Vehicle, "dailyRateSelfDrive">,
+  vehicle: Pick<Vehicle, "dailyRateSelfDrive" | "securityDeposit">,
   startAt: Date,
   endAt: Date,
 ): Quote {
@@ -61,7 +65,13 @@ export function quoteSelfDrive(
   const { percent, label } = discountFor(days);
   const discount = Math.round((subtotal * percent) / 100);
   const total = subtotal - discount;
-  const deposit = Math.round((total * config.selfDriveDepositPercent) / 100);
+
+  // No payment provider means nothing is collected up front, so the whole
+  // rental is due on the day. Charging a "deposit" that is never taken would
+  // understate what the customer is told to bring.
+  const deposit = stripeEnabled ? Math.round((total * config.selfDriveDepositPercent) / 100) : 0;
+  const balanceDue = total - deposit;
+  const securityDeposit = vehicle.securityDeposit ?? 0;
 
   return {
     days,
@@ -72,7 +82,11 @@ export function quoteSelfDrive(
     discountLabel: label ? `${label} · ${percent}% off` : null,
     total,
     deposit,
-    balanceDue: total - deposit,
+    balanceDue,
+    securityDeposit,
+    // The hold is refundable, but it is still money handed over on the day, so
+    // it belongs in the figure the customer is told to bring.
+    dueAtCollection: balanceDue + securityDeposit,
     currency: config.currency,
   };
 }
@@ -107,9 +121,12 @@ export function quoteChauffeur(
     discount: 0,
     discountLabel: null,
     total,
-    // Chauffeur trips are quoted and confirmed by an admin before any charge.
+    // Chauffeur trips are quoted and confirmed by an admin before any charge,
+    // and the car never leaves our driver, so no security hold is taken.
     deposit: 0,
     balanceDue: total,
+    securityDeposit: 0,
+    dueAtCollection: total,
     currency: config.currency,
   };
 }

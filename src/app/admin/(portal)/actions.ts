@@ -12,6 +12,7 @@ import { parseBusinessDateTime } from "@/lib/dates";
 import { toMinorUnits } from "@/lib/money";
 import {
   blockSchema,
+  customerRecordSchema,
   driverSchema,
   expenseSchema,
   fieldErrors,
@@ -319,6 +320,63 @@ export async function deleteVehicle(formData: FormData) {
   }
 
   refresh("/admin/vehicles", "/vehicles", "/");
+}
+
+/* ------------------------------------------------------------------ */
+/* Customers                                                           */
+/* ------------------------------------------------------------------ */
+
+export async function saveCustomer(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+
+  const parsed = customerRecordSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { error: "Please check the highlighted fields.", fieldErrors: fieldErrors(parsed.error) };
+  }
+  const input = parsed.data;
+  const email = input.email.toLowerCase().trim();
+
+  const data = {
+    name: input.name,
+    email,
+    phone: input.phone,
+    licenseNumber: input.licenseNumber || null,
+    licenseExpiry: input.licenseExpiry instanceof Date ? input.licenseExpiry : null,
+    licenseCountry: input.licenseCountry || null,
+  };
+
+  try {
+    if (input.id) {
+      await prisma.customer.update({ where: { id: input.id }, data });
+    } else {
+      // One record per email: re-adding someone updates them rather than
+      // creating a duplicate that splits their history.
+      const existing = await prisma.customer.findFirst({ where: { email } });
+      if (existing) {
+        await prisma.customer.update({ where: { id: existing.id }, data });
+        refresh("/admin/customers");
+        return { ok: `${input.name} already had a record — updated it instead.` };
+      }
+      await prisma.customer.create({ data });
+    }
+  } catch (error) {
+    return fail(error, "Could not save that customer.");
+  }
+
+  refresh("/admin/customers", "/admin/reservations/new");
+  return { ok: input.id ? "Customer updated." : `${input.name} saved.` };
+}
+
+export async function deleteCustomer(formData: FormData) {
+  await requireOwner();
+  const id = String(formData.get("id") ?? "");
+
+  // Their booking history references them, so only unused records can go.
+  const bookings = await prisma.reservation.count({ where: { customerId: id } });
+  if (bookings > 0) return;
+
+  await prisma.customer.delete({ where: { id } });
+  refresh("/admin/customers");
 }
 
 /* ------------------------------------------------------------------ */

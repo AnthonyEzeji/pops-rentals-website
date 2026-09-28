@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/reservations", label: "Reservations" },
   { href: "/admin/requests", label: "Requests" },
+  { href: "/admin/customers", label: "Customers" },
   { href: "/admin/vehicles", label: "Vehicles" },
   { href: "/admin/drivers", label: "Drivers" },
   { href: "/admin/maintenance", label: "Maintenance" },

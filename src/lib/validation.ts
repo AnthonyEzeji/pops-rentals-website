@@ -70,6 +70,17 @@ export const vehicleSchema = z.object({
   description: trimmed(4000).optional().default(""),
 });
 
+/** Saving a customer from the admin, ahead of any booking. */
+export const customerRecordSchema = z.object({
+  id: trimmed(40).optional().default(""),
+  name: required("Full name", 120),
+  email: z.email("Enter a valid email address."),
+  phone: required("Phone number", 40),
+  licenseNumber: trimmed(60).optional().default(""),
+  licenseExpiry: z.union([businessDate, z.literal("")]).optional(),
+  licenseCountry: trimmed(60).optional().default(""),
+});
+
 export const driverSchema = z.object({
   name: required("Name", 120),
   phone: required("Phone", 40),

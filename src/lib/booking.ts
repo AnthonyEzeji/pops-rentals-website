@@ -114,6 +114,7 @@ export async function createSelfDriveReservation(input: SelfDriveInput) {
           endAt: input.endAt,
           priceTotal: quote.total,
           depositAmount: quote.deposit,
+          securityDeposit: quote.securityDeposit,
           currency: quote.currency,
           paymentStatus: "unpaid",
           notes: input.notes ?? "",

@@ -9,10 +9,13 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "New reservation" };
 
 export default async function NewReservationPage() {
-  const vehicles = await prisma.vehicle.findMany({
-    where: { status: { not: "out_of_service" } },
-    orderBy: [{ make: "asc" }, { model: "asc" }],
-  });
+  const [vehicles, customers] = await Promise.all([
+    prisma.vehicle.findMany({
+      where: { status: { not: "out_of_service" } },
+      orderBy: [{ make: "asc" }, { model: "asc" }],
+    }),
+    prisma.customer.findMany({ orderBy: { name: "asc" }, take: 500 }),
+  ]);
 
   return (
     <>
@@ -33,6 +36,14 @@ export default async function NewReservationPage() {
             label: `${vehicle.year} ${vehicle.make} ${vehicle.model} · ${vehicle.plate} · ${formatMoney(
               vehicle.dailyRateSelfDrive,
             )}/day`,
+          }))}
+          customers={customers.map((customer) => ({
+            id: customer.id,
+            label: `${customer.name} — ${customer.phone}`,
+            name: customer.name,
+            email: customer.email,
+            phone: customer.phone,
+            licenseNumber: customer.licenseNumber,
           }))}
         />
       </div>

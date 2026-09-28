@@ -106,6 +106,8 @@ model Vehicle {
   dailyRateSelfDrive   Int
   chauffeurHourlyRate  Int?
   chauffeurDayRate     Int?
+  /// Refundable hold taken at collection. Varies by vehicle value.
+  securityDeposit      Int  @default(0)
 
   status      VehicleStatus @default(available)
   photos      String[]      @default([])
@@ -178,6 +180,9 @@ model Reservation {
   priceTotal     Int
   depositAmount  Int           @default(0)
   amountPaid     Int           @default(0)
+  /// Refundable hold, copied from the vehicle at booking so later rate changes
+  /// do not rewrite what this customer was quoted.
+  securityDeposit Int          @default(0)
   currency       String        @default("USD")
   paymentStatus  PaymentStatus @default(unpaid)
 
