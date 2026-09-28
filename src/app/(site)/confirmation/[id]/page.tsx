@@ -98,9 +98,17 @@ export default async function ConfirmationPage({ params, searchParams }: Props) 
           {reservation.amountPaid > 0 ? (
             <Row label="Paid">{formatMoney(reservation.amountPaid, reservation.currency)}</Row>
           ) : null}
-          {balance > 0 ? (
+          {!isChauffeur && reservation.securityDeposit > 0 ? (
+            <Row label="Refundable security deposit">
+              {formatMoney(reservation.securityDeposit, reservation.currency)}
+            </Row>
+          ) : null}
+          {balance + reservation.securityDeposit > 0 ? (
             <Row label={isChauffeur ? "Due after confirmation" : "Due at collection"}>
-              {formatMoney(balance, reservation.currency)}
+              {formatMoney(
+                balance + (isChauffeur ? 0 : reservation.securityDeposit),
+                reservation.currency,
+              )}
             </Row>
           ) : null}
         </dl>

@@ -65,6 +65,7 @@ async function emailPayload(reservationId: string): Promise<ReservationEmailData
     endAt: reservation.endAt,
     priceTotal: reservation.priceTotal,
     amountPaid: reservation.amountPaid,
+    securityDeposit: reservation.type === "chauffeur" ? 0 : reservation.securityDeposit,
     currency: reservation.currency,
     pickupAddress: reservation.chauffeurTrip?.pickupAddress,
     dropoffAddress: reservation.chauffeurTrip?.dropoffAddress,

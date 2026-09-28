@@ -109,6 +109,7 @@ async function markPaid(session: Stripe.Checkout.Session) {
     endAt: reservation.endAt,
     priceTotal: reservation.priceTotal,
     amountPaid,
+    securityDeposit: reservation.securityDeposit,
     currency: reservation.currency,
   }).catch(() => {});
 }

@@ -57,6 +57,7 @@ export type ReservationEmailData = {
   endAt: Date;
   priceTotal: number;
   amountPaid: number;
+  securityDeposit: number;
   currency: string;
   pickupAddress?: string | null;
   dropoffAddress?: string | null;
@@ -75,8 +76,16 @@ function detailsTable(data: ReservationEmailData) {
     ${row("Total", formatMoney(data.priceTotal, data.currency))}
     ${data.amountPaid > 0 ? row("Paid", formatMoney(data.amountPaid, data.currency)) : ""}
     ${
-      data.priceTotal - data.amountPaid > 0
-        ? row("Balance due", formatMoney(data.priceTotal - data.amountPaid, data.currency))
+      data.securityDeposit > 0
+        ? row("Refundable security deposit", formatMoney(data.securityDeposit, data.currency))
+        : ""
+    }
+    ${
+      data.priceTotal - data.amountPaid + data.securityDeposit > 0
+        ? row(
+            "Due at collection",
+            formatMoney(data.priceTotal - data.amountPaid + data.securityDeposit, data.currency),
+          )
         : ""
     }
   </table>`;

@@ -287,19 +287,27 @@ export default async function VehicleDetailPage({ params, searchParams }: Props)
                         <dd className="font-medium">{formatMoney(quote!.deposit)}</dd>
                       </div>
                       <div className="flex justify-between">
-                        <dt className="text-muted">Due at collection</dt>
+                        <dt className="text-muted">Rental balance</dt>
                         <dd className="font-medium tabular-nums">
                           {formatMoney(quote!.balanceDue)}
                         </dd>
                       </div>
                       {quote!.securityDeposit > 0 ? (
-                        <div className="flex justify-between border-t border-line pt-2">
+                        <div className="flex justify-between">
                           <dt className="text-muted">Refundable security deposit</dt>
                           <dd className="font-medium tabular-nums">
                             {formatMoney(quote!.securityDeposit)}
                           </dd>
                         </div>
                       ) : null}
+                      {/* The figure that matters: everything handed over on the
+                          day, deposit included. Same total as the checkout. */}
+                      <div className="flex justify-between border-t border-line pt-2">
+                        <dt className="font-medium">Due at collection</dt>
+                        <dd className="font-semibold tabular-nums">
+                          {formatMoney(quote!.dueAtCollection)}
+                        </dd>
+                      </div>
                     </dl>
                     <Link
                       href={`/book/self-drive?vehicle=${vehicle.slug}&start=${start}&end=${end}&startHour=${startHour}&endHour=${endHour}`}
