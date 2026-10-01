@@ -244,6 +244,25 @@ Once you have one:
 - [ ] Set `ADMIN_NOTIFICATION_EMAIL` so new bookings reach a person.
 - [ ] Send yourself one real booking to confirm both emails arrive.
 
+## 5b. Locking the site
+
+`SITE_LOCKED=true` makes every route answer 404 — public pages, the admin
+portal, the API and the vehicle photos. It is a switch, not a deletion: the
+code, the database, the bookings and the images are untouched.
+
+| | |
+|---|---|
+| **Lock** | Set `SITE_LOCKED=true` in Vercel, then redeploy |
+| **Unlock** | Delete `SITE_LOCKED` (or set it to anything else), then redeploy |
+| **Look at it while locked** | Set `SITE_UNLOCK_KEY` to a secret of your choosing, then visit `https://…/?access=<key>` once. The key is stored in a cookie for 30 days and stripped from the URL. |
+
+Environment changes only take effect on a new deployment, so both directions
+need a redeploy (`vercel deploy --prod`). Nothing else changes: unlocking
+restores the site exactly as it was, with every reservation and customer intact.
+
+Note for whoever operates the business: while it is locked, **they cannot reach
+the admin either**, so they cannot see today's pickups or returns.
+
 ## 6. Known gaps to close soon after launch
 
 - **Rate limiting is per-instance.** `src/lib/rate-limit.ts` keeps counters in
