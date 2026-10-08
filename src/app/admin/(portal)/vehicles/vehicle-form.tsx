@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { saveVehicle, type ActionState } from "../actions";
 import { SubmitButton } from "@/components/submit-button";
 import { Alert, Field } from "@/components/ui";
+import { PhotoUploader } from "@/components/photo-uploader";
 
 const EMPTY: ActionState = {};
 
@@ -32,7 +33,16 @@ export type VehicleFormValues = {
   description: string;
 };
 
-export function VehicleForm({ values, currency }: { values: VehicleFormValues; currency: string }) {
+export function VehicleForm({
+  values,
+  currency,
+  canUpload,
+}: {
+  values: VehicleFormValues;
+  currency: string;
+  /** Whether Blob storage is configured — resolved on the server. */
+  canUpload: boolean;
+}) {
   const [state, action] = useActionState(saveVehicle, EMPTY);
   const errors = state.fieldErrors ?? {};
 
@@ -245,12 +255,17 @@ export function VehicleForm({ values, currency }: { values: VehicleFormValues; c
       <fieldset className="card space-y-4 p-5">
         <legend className="px-1 text-sm font-semibold">Listing</legend>
         <Field
-          label="Photo URLs"
+          label="Photos"
           name="photos"
-          hint="One per line. The first is used as the cover image."
+          hint="The first photo is the cover image — drag to reorder."
           error={errors.photos}
         >
-          <textarea id="photos" name="photos" rows={3} className="input" defaultValue={values.photos} />
+          <PhotoUploader
+            name="photos"
+            initial={values.photos}
+            folder={values.id}
+            canUpload={canUpload}
+          />
         </Field>
         <Field label="Description" name="description" error={errors.description}>
           <textarea

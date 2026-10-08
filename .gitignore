@@ -51,3 +51,4 @@ photo-originals/
 supabase/.temp/
 
 .vercel
+.env*

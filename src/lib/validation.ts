@@ -66,7 +66,7 @@ export const vehicleSchema = z.object({
   zeroToSixty: z.coerce.number().min(0).max(60).optional(),
   topSpeed: z.coerce.number().int().min(0).max(500).optional(),
   features: trimmed(600).optional().default(""),
-  photos: trimmed(2000).optional().default(""),
+  photos: trimmed(8000).optional().default(""),
   description: trimmed(4000).optional().default(""),
 });
 

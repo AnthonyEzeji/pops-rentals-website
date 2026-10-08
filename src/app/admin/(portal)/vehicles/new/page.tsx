@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { config } from "@/lib/config";
+import { uploadsEnabled } from "@/lib/uploads";
 import { PageHeading } from "@/components/ui";
 import { VehicleForm } from "../vehicle-form";
 
@@ -19,6 +20,7 @@ export default function NewVehiclePage() {
       <div className="max-w-4xl">
         <VehicleForm
           currency={config.currency}
+          canUpload={uploadsEnabled()}
           values={{
             make: "",
             model: "",

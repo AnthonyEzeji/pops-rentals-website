@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { config } from "@/lib/config";
+import { uploadsEnabled } from "@/lib/uploads";
 import { formatMoney, toMajorUnits } from "@/lib/money";
 import { formatDate, formatDateTime } from "@/lib/dates";
 import { PageHeading, StatusBadge } from "@/components/ui";
@@ -63,6 +64,7 @@ export default async function EditVehiclePage({ params }: { params: Promise<{ id
         <div className="max-w-4xl">
           <VehicleForm
             currency={config.currency}
+            canUpload={uploadsEnabled()}
             values={{
               id: vehicle.id,
               make: vehicle.make,

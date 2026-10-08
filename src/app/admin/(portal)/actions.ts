@@ -10,6 +10,7 @@ import { changeStatus, rescheduleReservation } from "@/lib/booking";
 import { bookingReference, slugify } from "@/lib/reference";
 import { parseBusinessDateTime } from "@/lib/dates";
 import { toMinorUnits } from "@/lib/money";
+import { isBlobPhoto, uploadsEnabled } from "@/lib/uploads";
 import {
   blockSchema,
   customerRecordSchema,
@@ -237,6 +238,27 @@ export async function createReservationAction(
 /* Vehicles                                                            */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Removes uploaded photos from Blob once nothing points at them.
+ *
+ * Only files we uploaded are touched — photos committed to the repo and photos
+ * hosted elsewhere are left alone. Failure is swallowed deliberately: an
+ * orphaned image costs a fraction of a cent, and the vehicle has already been
+ * saved by the time this runs, so throwing here would report a save that
+ * actually succeeded as failed.
+ */
+async function discardPhotos(urls: string[]) {
+  const ours = urls.filter(isBlobPhoto);
+  if (ours.length === 0 || !uploadsEnabled()) return;
+
+  try {
+    const { del } = await import("@vercel/blob");
+    await del(ours);
+  } catch (error) {
+    console.error("Could not delete photos from Blob", error);
+  }
+}
+
 export async function saveVehicle(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
@@ -246,6 +268,7 @@ export async function saveVehicle(_prev: ActionState, formData: FormData): Promi
     return { error: "Please check the highlighted fields.", fieldErrors: fieldErrors(parsed.error) };
   }
   const input = parsed.data;
+  const nextPhotos = splitLines(input.photos ?? "");
 
   const data: Prisma.VehicleUncheckedCreateInput = {
     slug: slugify(`${input.year}-${input.make}-${input.model}-${input.plate}`),
@@ -268,15 +291,22 @@ export async function saveVehicle(_prev: ActionState, formData: FormData): Promi
     zeroToSixty: input.zeroToSixty ?? null,
     topSpeed: input.topSpeed ?? null,
     features: splitLines(input.features ?? ""),
-    photos: splitLines(input.photos ?? ""),
+    photos: nextPhotos,
     description: input.description ?? "",
   };
+
+  // Photos dropped in the form are deleted from storage only once the save
+  // goes through — an abandoned edit must leave the live listing intact.
+  const previousPhotos = id
+    ? (await prisma.vehicle.findUnique({ where: { id }, select: { photos: true } }))?.photos ?? []
+    : [];
 
   try {
     if (id) {
       // The slug is part of public URLs, so it is set once and left alone.
       const { slug: _slug, ...updatable } = data;
       await prisma.vehicle.update({ where: { id }, data: updatable });
+      await discardPhotos(previousPhotos.filter((photo) => !nextPhotos.includes(photo)));
     } else {
       await prisma.vehicle.create({ data });
     }
@@ -316,7 +346,11 @@ export async function deleteVehicle(formData: FormData) {
   if (bookings > 0) {
     await prisma.vehicle.update({ where: { id }, data: { status: "out_of_service" } });
   } else {
+    const vehicle = await prisma.vehicle.findUnique({ where: { id }, select: { photos: true } });
     await prisma.vehicle.delete({ where: { id } });
+    // Nothing can reference these any more, so they would be billed storage
+    // for a car that no longer exists.
+    await discardPhotos(vehicle?.photos ?? []);
   }
 
   refresh("/admin/vehicles", "/vehicles", "/");

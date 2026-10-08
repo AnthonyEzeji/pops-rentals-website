@@ -33,15 +33,15 @@ Two hard requirements come from this app:
    a few concurrent visitors will exhaust a normal connection limit. The
    provider needs a built-in pooler (PgBouncer), or you need to run one.
 
-**Supabase** is the choice here. It satisfies both requirements and bundles
-object storage, which is where vehicle photos should live once they outgrow the
-repo (PRD §7.1) — one less service to add later. **Neon** is an equally valid
-alternative if you only ever want a database.
+**Supabase** is the choice here. It satisfies both requirements. (It also
+bundles object storage, but vehicle photos went to Vercel Blob instead — see
+"Vehicle photos" below — so that is no longer a deciding factor.) **Neon** is an
+equally valid alternative if you only ever want a database.
 
 **Railway** is a worse fit *for a Vercel deployment*: its Postgres ships no
 managed connection pooler, so you would run PgBouncer yourself as a second
-service to solve a problem Supabase and Neon solve out of the box. It also has
-no object storage, so photos would still need R2 or S3. Railway becomes the
+service to solve a problem Supabase and Neon solve out of the box. Railway
+becomes the
 right answer only if the **app** moves there too — a long-running Node server
 holds a small, stable pool, which makes the pooler moot, and the database sits
 on the private network. That is a decision about where to host the app, not
@@ -138,10 +138,9 @@ every query on every page.
       deleted after a period of inactivity. Reservations and customer records
       are the business — treat paid-tier backups as a launch requirement, not a
       nicety.
-- [ ] Ignore the rest of Supabase for now. This app talks to Postgres through
-      Prisma with its own session auth; it does not use Supabase Auth, RLS or
-      the PostgREST API, and turning those on is not needed. Storage is the one
-      piece worth adopting later, for vehicle photos.
+- [ ] Ignore the rest of Supabase. This app talks to Postgres through Prisma
+      with its own session auth; it does not use Supabase Auth, RLS, Storage or
+      the PostgREST API, and turning those on is not needed.
 - [ ] Keep developing against Docker. Pointing local work at the production
       database risks a stray `db push` or reseed wiping live bookings.
 
@@ -180,6 +179,7 @@ are read at build time, so redeploy after changing them.
 | `NEXT_PUBLIC_BUSINESS_PHONE` / `_EMAIL` / `_ADDRESS` | Shown in header and footer; hidden when blank |
 | `NEXT_PUBLIC_INSTAGRAM` | `@popsrentals_` |
 | `SELF_DRIVE_DEPOSIT_PERCENT`, `MIN_RENTAL_DAYS`, `BOOKING_BUFFER_MINUTES`, `CANCELLATION_WINDOW_HOURS`, `WEEKLY_DISCOUNT_PERCENT`, `MONTHLY_DISCOUNT_PERCENT`, `CHAUFFEUR_HOLDS_ON_REQUEST` | Business rules; defaults in `src/lib/config.ts` |
+| `BLOB_READ_WRITE_TOKEN` | Vehicle photo uploads — see "Vehicle photos" below. Vercel sets it for you when a Blob store is connected to the project |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | See below |
 | `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_NOTIFICATION_EMAIL` | See below |
 
@@ -244,6 +244,42 @@ Once you have one:
 - [ ] Set `ADMIN_NOTIFICATION_EMAIL` so new bookings reach a person.
 - [ ] Send yourself one real booking to confirm both emails arrive.
 
+## 5a. Vehicle photos
+
+Photos are uploaded in the admin — open a vehicle, drop files on **Photos**,
+drag to set the order (the first is the cover) and save. They go straight from
+the browser to **Vercel Blob**, so adding a car's photos no longer needs a code
+deploy.
+
+- [ ] In Vercel → Storage, create a Blob store and connect it to this project.
+      That adds `BLOB_READ_WRITE_TOKEN` to the environment; redeploy once so
+      the running deployment can see it.
+- [ ] To upload while developing locally, pull the same token into `.env`:
+
+      ```bash
+      vercel env pull .env.local
+      ```
+
+      Without it the form still accepts pasted photo URLs, and says so — the
+      app does not fail, it just cannot take files.
+
+Notes worth knowing:
+
+- **Nothing is written until you save the vehicle.** Removing a thumbnail drops
+  the URL from the form; the file itself is deleted from the store when the save
+  goes through, so a cancelled edit leaves the live listing untouched.
+- **The old route still works.** Photos committed under `public/vehicles/<slug>/`
+  and attached with `npm run photos:sync` keep working and can sit alongside
+  uploaded ones. Uploads are not resized on the way in, so `photos:optimize`
+  only applies to the copies in the repo; Next's image optimizer handles the
+  uploaded ones at request time.
+- **Only Blob's own hostname is allow-listed** for the image optimizer
+  (`next.config.ts`). A photo URL pasted from anywhere else renders
+  unoptimized, by design — a wider allow-list would turn the optimizer into a
+  proxy for any host.
+- **Deleting a vehicle deletes its uploaded photos.** Retiring one (the path
+  taken when it has bookings) keeps them.
+
 ## 5b. Locking the site
 
 `SITE_LOCKED=true` makes every route answer 404 — public pages, the admin
@@ -263,6 +299,11 @@ restores the site exactly as it was, with every reservation and customer intact.
 Note for whoever operates the business: while it is locked, **they cannot reach
 the admin either**, so they cannot see today's pickups or returns.
 
+One thing the lock no longer covers: photos uploaded to Blob are served from
+Blob's own domain, not through this app, so anyone holding one of those URLs can
+still open the image while the site is locked. The listings, prices, booking
+flow and admin are all still 404.
+
 ## 6. Known gaps to close soon after launch
 
 - **Rate limiting is per-instance.** `src/lib/rate-limit.ts` keeps counters in
@@ -271,8 +312,10 @@ the admin either**, so they cannot see today's pickups or returns.
   gets real traffic.
 - **Sessions cannot be revoked.** Tokens are self-contained and valid for 8
   hours; deactivating a staff account does not end their current session.
-- **Photos are in the repo.** They deploy with the app, so adding photos means
-  a code deploy. Object storage (PRD §7.1) plus admin upload is the fix.
+- **Photo uploads have no image pipeline.** They are stored exactly as the
+  phone produced them — a 6MB original is served to every visitor at whatever
+  size the layout asks for, resized but not re-encoded from a smaller source.
+  Fine at this scale; worth a server-side resize on upload if the fleet grows.
 - **`middleware.ts` is deprecated** in Next 16 in favour of `proxy.ts`. It
   works, but migrate with `npx @next/codemod@canary middleware-to-proxy .`
 
