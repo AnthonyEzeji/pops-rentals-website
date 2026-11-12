@@ -5,7 +5,7 @@ portal for fleet, reservations, maintenance and expenses. Built against
 [docs/PRD.md](docs/PRD.md).
 
 **Stack:** Next.js 16 (App Router, server actions) · TypeScript · Postgres +
-Prisma · Tailwind v4 · Stripe Checkout · Resend.
+Prisma · Tailwind v4 · Stripe Checkout · Resend · Twilio (owner SMS).
 
 ## Getting started
 
@@ -22,9 +22,23 @@ Public site: http://localhost:3000 — admin: http://localhost:3000/admin
 Seed logins: `owner@fleetreserve.test` / `ChangeMe123!` (owner) and
 `staff@fleetreserve.test` / `StaffPass123!` (staff).
 
-Stripe and Resend are optional in development. With no `STRIPE_SECRET_KEY`,
+Stripe, Resend and Twilio are optional in development. With no `STRIPE_SECRET_KEY`,
 bookings are taken as pay-at-pickup and confirm immediately; with no
-`RESEND_API_KEY`, emails are printed to the server console.
+`RESEND_API_KEY`, emails are printed to the server console; with no Twilio
+credentials, the owner's text alerts are printed there too.
+
+## Notifications
+
+Every new booking or chauffeur request triggers, best-effort and never blocking
+the booking ([src/lib/booking.ts](src/lib/booking.ts) `notifyNewReservation`):
+
+- a confirmation email to the customer (Resend),
+- an alert email to `ADMIN_NOTIFICATION_EMAIL`,
+- an alert text to `ADMIN_NOTIFICATION_PHONE` ([src/lib/sms.ts](src/lib/sms.ts), Twilio).
+
+When Stripe confirms a deposit, the customer is emailed and the owner is texted
+again from the webhook. Customers are not texted; see
+[docs/DEPLOY.md](docs/DEPLOY.md) §5b for why and how to switch it all on.
 
 ## How double-booking is prevented
 

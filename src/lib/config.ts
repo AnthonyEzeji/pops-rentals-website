@@ -63,6 +63,9 @@ export const config = {
 
 export const stripeEnabled = Boolean(process.env.STRIPE_SECRET_KEY);
 export const emailEnabled = Boolean(process.env.RESEND_API_KEY);
+export const smsEnabled = Boolean(
+  process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_FROM_NUMBER,
+);
 
 /**
  * The app does not depend on the server's timezone. Booking times arrive as

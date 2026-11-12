@@ -3,7 +3,8 @@ import type Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { sendCustomerConfirmation } from "@/lib/email";
-import { vehicleLabel } from "@/lib/booking";
+import { sendAdminPaymentSms } from "@/lib/sms";
+import { emailPayload } from "@/lib/booking";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -99,19 +100,11 @@ async function markPaid(session: Stripe.Checkout.Session) {
     },
   });
 
-  await sendCustomerConfirmation({
-    reference: reservation.reference,
-    type: reservation.type,
-    customerName: reservation.customer.name,
-    customerEmail: reservation.customer.email,
-    vehicleLabel: vehicleLabel(reservation.vehicle),
-    startAt: reservation.startAt,
-    endAt: reservation.endAt,
-    priceTotal: reservation.priceTotal,
-    amountPaid,
-    securityDeposit: reservation.securityDeposit,
-    currency: reservation.currency,
-  }).catch(() => {});
+  // Re-read after the update so the payload carries the confirmed status and
+  // the real amount paid; both the customer email and the owner text use it.
+  const data = await emailPayload(reservation.id).catch(() => null);
+  if (!data) return;
+  await Promise.allSettled([sendCustomerConfirmation(data), sendAdminPaymentSms(data)]);
 }
 
 /**

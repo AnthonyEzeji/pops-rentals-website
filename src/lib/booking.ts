@@ -18,6 +18,7 @@ import {
   sendCustomerConfirmation,
   type ReservationEmailData,
 } from "./email";
+import { sendAdminAlertSms } from "./sms";
 
 export function vehicleLabel(v: { year: number; make: string; model: string }) {
   return `${v.year} ${v.make} ${v.model}`;
@@ -50,7 +51,7 @@ async function upsertCustomer(
   return db.customer.create({ data: { email, ...data } });
 }
 
-async function emailPayload(reservationId: string): Promise<ReservationEmailData> {
+export async function emailPayload(reservationId: string): Promise<ReservationEmailData> {
   const reservation = await prisma.reservation.findUniqueOrThrow({
     where: { id: reservationId },
     include: { vehicle: true, customer: true, chauffeurTrip: { include: { driver: true } } },
@@ -58,8 +59,10 @@ async function emailPayload(reservationId: string): Promise<ReservationEmailData
   return {
     reference: reservation.reference,
     type: reservation.type,
+    status: reservation.status,
     customerName: reservation.customer.name,
     customerEmail: reservation.customer.email,
+    customerPhone: reservation.customer.phone,
     vehicleLabel: vehicleLabel(reservation.vehicle),
     startAt: reservation.startAt,
     endAt: reservation.endAt,
@@ -209,7 +212,11 @@ export async function createChauffeurRequest(input: ChauffeurInput) {
 /** PRD N1/N2 — fired after the reservation exists, never blocking the booking. */
 export async function notifyNewReservation(reservationId: string) {
   const data = await emailPayload(reservationId);
-  await Promise.allSettled([sendCustomerConfirmation(data), sendAdminAlert(data)]);
+  await Promise.allSettled([
+    sendCustomerConfirmation(data),
+    sendAdminAlert(data),
+    sendAdminAlertSms(data),
+  ]);
 }
 
 const ALLOWED_TRANSITIONS: Record<ReservationStatus, ReservationStatus[]> = {

@@ -182,6 +182,7 @@ are read at build time, so redeploy after changing them.
 | `BLOB_READ_WRITE_TOKEN` | Vehicle photo uploads — see "Vehicle photos" below. Vercel sets it for you when a Blob store is connected to the project |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | See below |
 | `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_NOTIFICATION_EMAIL` | See below |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `ADMIN_NOTIFICATION_PHONE` | Owner SMS alerts — see "Owner text alerts" below |
 
 ### Session secret
 
@@ -243,6 +244,31 @@ Once you have one:
       `Pops Rentals <bookings@yourdomain.com>`.
 - [ ] Set `ADMIN_NOTIFICATION_EMAIL` so new bookings reach a person.
 - [ ] Send yourself one real booking to confirm both emails arrive.
+
+## 5b. Owner text alerts
+
+The owner can be texted alongside the admin email: once when a booking or
+chauffeur request comes in, and again when Stripe confirms the deposit on a
+booking that was waiting for payment. Customers are **not** texted — doing so
+in the US needs A2P 10DLC registration and recorded opt-in, so it is left for
+a later phase.
+
+Texts need no domain, so this can be live before email is.
+
+- [ ] Create a Twilio account and buy a number with SMS capability
+      (about $1.15/month plus under a cent per message).
+- [ ] Copy the Account SID and Auth Token from the Twilio console into
+      `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN`.
+- [ ] Set `TWILIO_FROM_NUMBER` to the purchased number in E.164 form
+      (`+12125551234`) and `ADMIN_NOTIFICATION_PHONE` to the owner's
+      mobile(s), comma-separated. Bare 10-digit numbers are treated as US.
+- [ ] On a trial account Twilio only delivers to verified numbers, so verify
+      the owner's mobile in the console or upgrade the account.
+- [ ] Take one booking and confirm the text arrives. Failures are logged under
+      `[sms]` in the Vercel function logs and never block the booking.
+
+With any of the three Twilio variables missing, texts are printed to the server
+console instead of sent, the same as email without `RESEND_API_KEY`.
 
 ## 5a. Vehicle photos
 

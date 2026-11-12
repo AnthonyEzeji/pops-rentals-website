@@ -1,4 +1,5 @@
 import "server-only";
+import type { ReservationStatus } from "@prisma/client";
 import { Resend } from "resend";
 import { config, emailEnabled } from "./config";
 import { formatMoney } from "./money";
@@ -50,8 +51,10 @@ function row(label: string, value: string) {
 export type ReservationEmailData = {
   reference: string;
   type: "self_drive" | "chauffeur";
+  status: ReservationStatus;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string | null;
   vehicleLabel: string;
   startAt: Date;
   endAt: Date;
