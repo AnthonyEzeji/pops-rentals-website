@@ -19,12 +19,18 @@ async function send({ to, subject, html }: Mail) {
     return { delivered: false as const, reason: "RESEND_API_KEY not set" };
   }
   try {
-    await resend.emails.send({
+    // Resend reports API rejections (unverified domain, bad key) in the
+    // return value rather than throwing, so check it or they vanish silently.
+    const { error } = await resend.emails.send({
       from: process.env.EMAIL_FROM || `${config.businessName} <onboarding@resend.dev>`,
       to,
       subject,
       html,
     });
+    if (error) {
+      console.error("[email] send failed", { to, subject, error });
+      return { delivered: false as const, reason: error.message };
+    }
     return { delivered: true as const };
   } catch (error) {
     console.error("[email] send failed", { to, subject, error });
