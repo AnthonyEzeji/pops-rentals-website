@@ -27,7 +27,9 @@ async function send({ to, body }: Sms) {
 
   const sid = process.env.TWILIO_ACCOUNT_SID!;
   const token = process.env.TWILIO_AUTH_TOKEN!;
-  const from = process.env.TWILIO_FROM_NUMBER!;
+  // Pasted from the Twilio console this is often "(877) 555-1234"; the API
+  // only takes E.164.
+  const from = normalizePhone(process.env.TWILIO_FROM_NUMBER!);
 
   try {
     const response = await fetch(
